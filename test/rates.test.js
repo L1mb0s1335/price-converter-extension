@@ -69,11 +69,9 @@ eq('EUR берётся свой, а не якорный', C.rateFor('EUR', rates
 const eurOnly = Object.assign({}, base, { manualRates: { EUR: { value: 110, against: 'RUB' } }, scaleOthers: true });
 eq('USD по якорю EUR', C.rateFor('USD', rates, eurOnly), 86.47 * (110 / 100.5));
 
-// Суммы и наценка
+// Суммы
 eq('100 USD', C.toRub(100, 'USD', rates, base), 8647);
 eq('100 USD по своему курсу', C.toRub(100, 'USD', rates, manualUsd), 9500);
-const withMarkup = Object.assign({}, manualUsd, { markup: 5 });
-eq('100 USD со своим курсом и наценкой 5%', C.toRub(100, 'USD', rates, withMarkup), 9975);
 
 // Конверсия между двумя не-рублёвыми валютами через общий курс к рублю
 eq('100 USD в EUR', C.toTarget(100, 'USD', 'EUR', rates, base), (100 * 86.47) / 100.5);

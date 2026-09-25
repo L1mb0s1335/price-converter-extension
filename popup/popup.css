@@ -136,9 +136,6 @@ h1 { font-size: 15px; margin: 0; font-weight: 600; }
 
 .row.site { margin-top: 2px; }
 
-.field { display: flex; align-items: center; gap: 4px; }
-.unit { color: var(--muted); }
-
 input[type="number"] {
   width: 62px;
   padding: 4px 6px;
@@ -230,8 +227,14 @@ footer {
 
 .manual-row input[type="number"] { flex: 1; min-width: 0; width: auto; }
 
+.manual-actions {
+  display: flex;
+  gap: 6px;
+}
+
 .full-btn {
   display: block;
+  flex: 1;
   width: 100%;
   border: 1px solid var(--line);
   background: var(--chip);
@@ -244,6 +247,16 @@ footer {
 }
 
 .full-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+.full-btn.ghost {
+  background: transparent;
+  color: var(--muted);
+  flex: 0 0 auto;
+}
+
+.full-btn.ghost:hover { color: var(--fg); border-color: var(--muted); }
+
+.full-btn.ghost:disabled { opacity: .45; cursor: default; border-color: var(--line); color: var(--muted); }
 
 .chips {
   display: flex;

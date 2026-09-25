@@ -85,13 +85,13 @@ function renderManual() {
   }
   $('scaleRow').classList.toggle('hidden', codes.length === 0);
   $('scaleOthers').checked = Boolean(settings.scaleOthers);
+  $('mClear').disabled = codes.length === 0;
 }
 
 function applyTexts() {
   document.documentElement.lang = lang;
   document.documentElement.dir = PriceI18n.dirFor(lang);
   PriceI18n.applyDom(document, lang);
-  $('minAmountUnit').textContent = PriceConfig.symbolFor(settings.targetCurrency || 'RUB');
 }
 
 function renderSettings() {
@@ -99,8 +99,6 @@ function renderSettings() {
   renderSegmented($('mode'), settings.mode);
   renderSegmented($('source'), settings.source);
   renderSegmented($('language'), lang);
-  $('markup').value = settings.markup;
-  $('minAmount').value = settings.minAmountRub;
   renderTargetSelect();
   renderManual();
   applyTexts();
@@ -202,16 +200,6 @@ async function init() {
     $('status').textContent = PriceI18n.t(lang, 'switchingSource');
   });
 
-  $('markup').addEventListener('change', (e) => {
-    const v = Math.max(0, Math.min(100, Number(e.target.value) || 0));
-    save({ markup: v });
-  });
-
-  $('minAmount').addEventListener('change', (e) => {
-    const v = Math.max(0, Number(e.target.value) || 0);
-    save({ minAmountRub: v });
-  });
-
   $('siteOff').addEventListener('change', async (e) => {
     if (!currentHost) return;
     const hosts = new Set(settings.disabledHosts || []);
@@ -234,6 +222,11 @@ async function init() {
 
   $('mValue').addEventListener('keydown', (e) => {
     if (e.key === 'Enter') $('mAdd').click();
+  });
+
+  $('mClear').addEventListener('click', () => {
+    if ($('mClear').disabled) return;
+    save({ manualRates: {} });
   });
 
   $('scaleOthers').addEventListener('change', (e) => save({ scaleOthers: e.target.checked }));

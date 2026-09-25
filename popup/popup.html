@@ -56,19 +56,12 @@
       <input type="number" id="mValue" min="0" step="0.0001" placeholder="0">
       <select id="mAgainst" class="mAgainst"></select>
     </div>
-    <button id="mAdd" class="full-btn" data-i18n="setBtn">Задать</button>
+    <div class="manual-actions">
+      <button id="mAdd" class="full-btn" data-i18n="setBtn">Задать</button>
+      <button id="mClear" class="full-btn ghost" data-i18n="clearAllBtn">Очистить всё</button>
+    </div>
     <div id="mList" class="chips"></div>
     <label class="chk" id="scaleRow"><input type="checkbox" id="scaleOthers"> <span data-i18n="scaleOthersLabel">Остальные валюты — от моего курса</span></label>
-  </section>
-
-  <section class="row">
-    <label for="markup" data-i18n="markupLabel">Наценка к курсу</label>
-    <div class="field"><input type="number" id="markup" min="0" max="100" step="0.5"><span class="unit">%</span></div>
-  </section>
-
-  <section class="row">
-    <label for="minAmount" data-i18n="minAmountLabel">Не показывать до</label>
-    <div class="field"><input type="number" id="minAmount" min="0" step="10"><span class="unit" id="minAmountUnit">₽</span></div>
   </section>
 
   <section class="row site">
