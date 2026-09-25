@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <title>Прогон по сохранённой странице магазина</title>
+  <style>
+    body { font: 14px "Segoe UI", sans-serif; margin: 0; }
+    #bar { padding: 8px 12px; background: #f4f4f4; border-bottom: 1px solid #ddd; }
+    iframe { width: 100%; height: calc(100vh - 40px); border: 0; }
+  </style>
+</head>
+<body>
+  <div id="bar">Сохранённая копия страницы магазина + настоящий content script. <span id="state">загружаю…</span></div>
+  <iframe id="frame" src="_live-jarir.html"></iframe>
+
+  <script>
+    // Тот же шим chrome.*, что и в fixture.html, но ставится внутрь iframe.
+    const RATES = {
+      rubPer: { RUB: 1, USD: 86.47, EUR: 100.5, SAR: 23.06, AED: 23.54, GBP: 116.4 },
+      date: '2026-09-09', source: 'ЦБ РФ', ts: Date.now(), count: 6,
+    };
+    const SETTINGS = {
+      enabled: true, mode: 'append', source: 'cbr', markup: 0, minAmountRub: 0,
+      manualRates: {}, scaleOthers: false, disabledHosts: [],
+    };
+
+    const frame = document.getElementById('frame');
+    frame.addEventListener('load', () => {
+      const win = frame.contentWindow;
+      const doc = frame.contentDocument;
+      const store = { settings: SETTINGS, rates: RATES };
+      const listeners = [];
+
+      win.chrome = {
+        storage: {
+          local: {
+            get: (keys) => {
+              const list = Array.isArray(keys) ? keys : [keys];
+              const out = {};
+              for (const k of list) if (k in store) out[k] = store[k];
+              return Promise.resolve(out);
+            },
+            set: (obj) => {
+              const changes = {};
+              for (const k of Object.keys(obj)) {
+                changes[k] = { oldValue: store[k], newValue: obj[k] };
+                store[k] = obj[k];
+              }
+              listeners.forEach((fn) => fn(changes, 'local'));
+              return Promise.resolve();
+            },
+          },
+          onChanged: { addListener(fn) { listeners.push(fn); } },
+        },
+        runtime: {
+          sendMessage: () => Promise.resolve({ ok: true, rates: RATES }),
+          onMessage: { addListener() {} },
+        },
+      };
+      window.rpcSet = (patch) => win.chrome.storage.local.set({ settings: Object.assign({}, store.settings, patch) });
+
+      const link = doc.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = '/content/content.css';
+      doc.head.appendChild(link);
+
+      const files = ['/lib/parser.js', '/lib/config.js', '/lib/i18n.js', '/content/converter.js'];
+      (function next(i) {
+        if (i >= files.length) {
+          document.getElementById('state').textContent = 'content script запущен';
+          return;
+        }
+        const el = doc.createElement('script');
+        el.src = files[i];
+        el.onload = () => next(i + 1);
+        doc.body.appendChild(el);
+      })(0);
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <span class="brand-badge">₽</span>
+      <h1 data-i18n="appTitle">Конвертер цен</h1>
+    </div>
+    <label class="switch">
+      <input type="checkbox" id="enabled">
+      <span class="slider"></span>
+    </label>
+  </header>
+
+  <section class="block lang-target">
+    <div class="col">
+      <div class="label" data-i18n="languageLabel">Язык интерфейса</div>
+      <div class="segmented" id="language">
+        <button data-value="ru">RU</button>
+        <button data-value="en">EN</button>
+        <button data-value="ar">AR</button>
+      </div>
+    </div>
+    <div class="col">
+      <div class="label" data-i18n="targetLabel">Показывать цены в</div>
+      <select id="targetCurrency" class="target-select"></select>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="label" data-i18n="modeLabel">Как показывать</div>
+    <div class="segmented" id="mode">
+      <button data-value="append" data-i18n="modeAppend">Дописывать</button>
+      <button data-value="replace" data-i18n="modeReplace">Заменять</button>
+      <button data-value="tooltip" data-i18n="modeTooltip">Подсказка</button>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="label" data-i18n="sourceLabel">Источник курса</div>
+    <div class="segmented" id="source">
+      <button data-value="cbr" data-i18n="sourceCbr">ЦБ РФ</button>
+      <button data-value="market" data-i18n="sourceMarket">Рыночный</button>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="label" data-i18n="customLabel">Свой курс</div>
+    <div class="manual-add">
+      <select id="mCode"></select>
+      <input type="number" id="mValue" min="0" step="0.01">
+      <button id="mAdd" data-i18n="setBtn">Задать</button>
+    </div>
+    <div id="mList" class="chips"></div>
+    <label class="chk" id="scaleRow"><input type="checkbox" id="scaleOthers"> <span data-i18n="scaleOthersLabel">Остальные валюты — от моего курса</span></label>
+  </section>
+
+  <section class="row">
+    <label for="markup" data-i18n="markupLabel">Наценка к курсу</label>
+    <div class="field"><input type="number" id="markup" min="0" max="100" step="0.5"><span class="unit">%</span></div>
+  </section>
+
+  <section class="row">
+    <label for="minAmount" data-i18n="minAmountLabel">Не показывать до</label>
+    <div class="field"><input type="number" id="minAmount" min="0" step="10"><span class="unit" id="minAmountUnit">₽</span></div>
+  </section>
+
+  <section class="row site">
+    <label for="siteOff" id="siteLabel" data-i18n="siteOffGeneric">Выключить на этом сайте</label>
+    <input type="checkbox" id="siteOff">
+  </section>
+
+  <footer>
+    <div id="status" data-i18n="statusLoading">Загружаю курсы…</div>
+    <div class="actions">
+      <span id="count"></span>
+      <button id="refresh" data-i18n="refreshBtn">Обновить курс</button>
+    </div>
+  </footer>
+
+  <script src="../lib/config.js"></script>
+  <script src="../lib/i18n.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

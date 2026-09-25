@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <title>Проверка конвертера цен</title>
+  <link rel="stylesheet" href="../content/content.css">
+  <style>
+    body { font: 15px/1.6 "Segoe UI", sans-serif; max-width: 720px; margin: 24px auto; padding: 0 16px; }
+    li { margin: 3px 0; }
+    .card { border: 1px solid #ddd; border-radius: 8px; padding: 10px 14px; margin-top: 14px; }
+    code { background: #f4f4f4; padding: 1px 4px; }
+  </style>
+</head>
+<body>
+  <h1>Цены для проверки</h1>
+  <ul id="list">
+    <li>Ноутбук — $1,299.00</li>
+    <li>Наушники — 249,99 €</li>
+    <li>Подписка — £9.99 в месяц</li>
+    <li>Билет — 45 000 ¥</li>
+    <li>Курс — 100 zł</li>
+    <li>Хостинг — USD 20 в месяц</li>
+    <li>Раунд — $2.5M инвестиций</li>
+    <li>Кофе — 3 500 тенге</li>
+    <li>Уже в рублях — 1 299 ₽ (трогать не должен)</li>
+    <li>Мелочь — $0.30 (при пороге отсекается)</li>
+  </ul>
+
+  <div class="card">
+    <p>Цены, разбитые по элементам (как в реальных магазинах):</p>
+    <ul>
+      <li id="split1"><span class="price_alignment"><span class="price__currency">SR</span> 399</span></li>
+      <li id="split2"><span><span>$</span><span>1,299</span></span></li>
+      <li id="split4"><span class="price"><span class="cur">SR</span>180</span> — маркер вплотную, но в соседнем элементе</li>
+      <li id="split3"><span>от <b>25</b><span>&nbsp;EUR</span> за месяц</span></li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <p>Не цены: iPhone 15 Pro, версия 2.0.1, дата 12.05.2024, дом 5 кв 12.</p>
+    <p>В <code>&lt;code&gt;</code> не трогаем: <code>const price = $5;</code></p>
+    <p>В поле ввода не трогаем: <input value="$99 внутри input" size="26"></p>
+  </div>
+
+  <div class="card">
+    <button id="add">Добавить цену динамически (проверка MutationObserver)</button>
+    <div id="dynamic"></div>
+  </div>
+
+  <script>
+    // Заглушка chrome.* — чтобы гонять реальный content script вне расширения.
+    const FAKE_RATES = {
+      rubPer: { RUB: 1, USD: 81.5, EUR: 95.2, GBP: 110.4, JPY: 0.55, PLN: 22.1, KZT: 0.17, CNY: 11.4, SAR: 21.7 },
+      date: '2026-09-09', source: 'test', ts: Date.now(), count: 9,
+    };
+    const FAKE_SETTINGS = {
+      enabled: true, mode: 'append', source: 'cbr', markup: 0, minAmountRub: 50, disabledHosts: [],
+    };
+    const store = { settings: FAKE_SETTINGS, rates: FAKE_RATES };
+    const listeners = [];
+    window.chrome = {
+      storage: {
+        local: {
+          get: (keys) => {
+            const list = Array.isArray(keys) ? keys : [keys];
+            const out = {};
+            for (const k of list) if (k in store) out[k] = store[k];
+            return Promise.resolve(out);
+          },
+          set: (obj) => {
+            const changes = {};
+            for (const k of Object.keys(obj)) {
+              changes[k] = { oldValue: store[k], newValue: obj[k] };
+              store[k] = obj[k];
+            }
+            listeners.forEach((fn) => fn(changes, 'local'));
+            return Promise.resolve();
+          },
+        },
+        onChanged: { addListener(fn) { listeners.push(fn); } },
+      },
+      runtime: {
+        sendMessage: () => Promise.resolve({ ok: true, rates: FAKE_RATES }),
+        onMessage: { addListener() {} },
+      },
+    };
+
+    // Хелпер для проверки смены настроек прямо из консоли: rpcSet({ mode: 'replace' })
+    window.rpcSet = (patch) => chrome.storage.local.set({ settings: Object.assign({}, store.settings, patch) });
+
+    document.getElementById('add').addEventListener('click', () => {
+      const div = document.createElement('div');
+      div.textContent = 'Добавлено позже: 149 USD и 30 £';
+      document.getElementById('dynamic').appendChild(div);
+    });
+  </script>
+  <script src="../lib/parser.js"></script>
+  <script src="../lib/config.js"></script>
+  <script src="../lib/i18n.js"></script>
+  <script src="../content/converter.js"></script>
+</body>
+</html>
