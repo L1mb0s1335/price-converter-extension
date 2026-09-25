@@ -6,7 +6,7 @@
   "description": "__MSG_extDescription__",
   "permissions": ["storage", "alarms", "activeTab"],
   "host_permissions": [
-    "https://www.cbr-xml-daily.ru/*",
+    "https://api.frankfurter.dev/*",
     "https://open.er-api.com/*"
   ],
   "background": {
@@ -14,7 +14,7 @@
   },
   "action": {
     "default_popup": "popup/popup.html",
-    "default_title": "Цены в рублях",
+    "default_title": "__MSG_extName__",
     "default_icon": {
       "16": "icons/icon16.png",
       "32": "icons/icon32.png",

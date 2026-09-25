@@ -56,7 +56,7 @@ function renderTargetSelect() {
 }
 
 function sourceLabel(key) {
-  if (key === 'cbr') return PriceI18n.t(lang, 'sourceCbr');
+  if (key === 'ecb') return PriceI18n.t(lang, 'sourceEcb');
   if (key === 'market') return PriceI18n.t(lang, 'sourceMarket');
   return key;
 }

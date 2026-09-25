@@ -12,7 +12,7 @@ function eq(label, got, expected) {
   }
 }
 
-const rates = { rubPer: { RUB: 1, USD: 86.47, EUR: 100.5, CNY: 12.1 }, source: 'cbr', count: 4, ts: Date.now() };
+const rates = { rubPer: { RUB: 1, USD: 86.47, EUR: 100.5, CNY: 12.1 }, source: 'ecb', count: 4, ts: Date.now() };
 const base = C.DEFAULT_SETTINGS;
 
 // Без ручных курсов — как у источника
