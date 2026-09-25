@@ -46,15 +46,12 @@
     if (code === targetCode()) return null; // уже в целевой валюте — не трогаем
     const converted = PriceConfig.toTarget(amount, code, targetCode(), rates, settings);
     if (converted === null || !isFinite(converted)) return null;
-    // Порог задаётся в целевой валюте — том же числе, что видит пользователь.
-    if (settings.minAmountRub && converted < settings.minAmountRub) return null;
     return converted;
   }
 
   function noteFor(code) {
     const manual = (settings.manualRates || {})[code] > 0;
-    return (settings.markup ? PriceI18n.t(lang, 'markupNote', { markup: settings.markup }) : '') +
-      (manual ? PriceI18n.t(lang, 'customNote') : '');
+    return manual ? PriceI18n.t(lang, 'customNote') : '';
   }
 
   function fmt(value) {
@@ -191,6 +188,7 @@
     if (!el || el.nodeType !== Node.ELEMENT_NODE) return false;
     if (SKIP_TAGS.has(el.tagName)) return false;
     if (el.dataset && (el.dataset.rpc || el.dataset.rpcDone)) return false;
+    if (el.getAttribute && el.getAttribute('aria-hidden') === 'true') return false;
     const text = el.textContent;
     if (!text || text.length > MAX_CONTAINER_TEXT) return false;
     const kids = el.querySelectorAll('*');
@@ -208,9 +206,17 @@
     let node;
     while ((node = walker.nextNode())) {
       const parent = node.parentElement;
-      if (!parent || SKIP_TAGS.has(parent.tagName) || parent.closest('[data-rpc]')) continue;
+      if (!parent || isSkippable(parent)) continue;
       if (handledNodes.has(node)) continue;
       const value = node.nodeValue || '';
+      // Цифра встык с цифрой на стыке двух узлов — почти всегда разные величины
+      // (например «$149» + «00» центов без точки в тексте, только стилем), а не
+      // продолжение одного числа. Символ и число (в любом порядке) — законная
+      // склейка, ради которой эта функция и существует; число-к-числу без
+      // разделителя — нет, поэтому здесь разрываем пробелом.
+      if (value && /\d/.test(value[0]) && /\d$/.test(text)) {
+        text += ' ';
+      }
       nodes.push({ node: node, start: text.length, end: text.length + value.length });
       text += value;
     }
@@ -244,6 +250,10 @@
       if (SKIP_TAGS.has(cur.tagName)) return true;
       if (cur.dataset && cur.dataset.rpc) return true;
       if (cur.isContentEditable) return true;
+      // aria-hidden отмечает декоративный дубликат (часто — визуально разбитая на
+      // спаны цена без десятичной точки в тексте: «$» + «129» + «95» = 12995, а не
+      // 129.95); настоящий текст для скринридеров обычно лежит рядом без этого атрибута.
+      if (cur.getAttribute && cur.getAttribute('aria-hidden') === 'true') return true;
       if (cur.tagName === 'BODY' || cur.tagName === 'HTML') break;
     }
     return false;
