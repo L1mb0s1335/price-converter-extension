@@ -27,6 +27,21 @@ function renderCodeSelect() {
   if (previous && availableCodes.includes(previous)) select.value = previous;
 }
 
+/** Валюта, к которой приравнивается свой курс — любая известная, по умолчанию рубль. */
+function renderAgainstSelect() {
+  const select = $('mAgainst');
+  const previous = select.value;
+  const codes = ['RUB'].concat(availableCodes);
+  select.innerHTML = '';
+  for (const code of codes) {
+    const opt = document.createElement('option');
+    opt.value = code;
+    opt.textContent = code;
+    select.appendChild(opt);
+  }
+  select.value = previous && codes.includes(previous) ? previous : 'RUB';
+}
+
 function renderTargetSelect() {
   const select = $('targetCurrency');
   const codes = PriceConfig.TARGET_CURRENCIES.filter((c) => c === 'RUB' || availableCodes.includes(c) || c === settings.targetCurrency);
@@ -52,9 +67,10 @@ function renderManual() {
   const list = $('mList');
   list.innerHTML = '';
   for (const code of codes) {
+    const entry = manual[code];
     const chip = document.createElement('span');
     chip.className = 'chip';
-    chip.textContent = '1 ' + code + ' = ' + manual[code] + ' ₽';
+    chip.textContent = '1 ' + code + ' = ' + entry.value + ' ' + (entry.against || 'RUB');
     const del = document.createElement('button');
     del.type = 'button';
     del.textContent = '✕';
@@ -75,7 +91,6 @@ function applyTexts() {
   document.documentElement.lang = lang;
   document.documentElement.dir = PriceI18n.dirFor(lang);
   PriceI18n.applyDom(document, lang);
-  $('mValue').placeholder = PriceI18n.t(lang, 'perUnitPlaceholder', { sym: '₽' });
   $('minAmountUnit').textContent = PriceConfig.symbolFor(settings.targetCurrency || 'RUB');
 }
 
@@ -159,6 +174,7 @@ async function init() {
     availableCodes = POPULAR.filter((c) => data.rates.rubPer[c]).concat(rest);
   }
   renderCodeSelect();
+  renderAgainstSelect();
   renderTargetSelect();
   renderRates(data.rates, data.ratesError);
   loadStats(tab);
@@ -207,10 +223,11 @@ async function init() {
 
   $('mAdd').addEventListener('click', () => {
     const code = $('mCode').value;
+    const against = $('mAgainst').value || 'RUB';
     const value = Number($('mValue').value);
-    if (!code || !(value > 0)) return;
+    if (!code || code === against || !(value > 0)) return;
     const next = Object.assign({}, settings.manualRates);
-    next[code] = value;
+    next[code] = { value: value, against: against };
     save({ manualRates: next });
     $('mValue').value = '';
   });

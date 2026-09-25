@@ -1,3 +1,4 @@
 test/_live-*.html
 node_modules/
 *.log
+.claude/

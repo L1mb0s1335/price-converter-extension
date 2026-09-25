@@ -50,11 +50,13 @@
 
   <section class="block">
     <div class="label" data-i18n="customLabel">Свой курс</div>
-    <div class="manual-add">
-      <select id="mCode"></select>
-      <input type="number" id="mValue" min="0" step="0.01">
-      <button id="mAdd" data-i18n="setBtn">Задать</button>
+    <div class="manual-row">
+      <select id="mCode" class="mCode"></select>
+      <span class="eq">=</span>
+      <input type="number" id="mValue" min="0" step="0.0001" placeholder="0">
+      <select id="mAgainst" class="mAgainst"></select>
     </div>
+    <button id="mAdd" class="full-btn" data-i18n="setBtn">Задать</button>
     <div id="mList" class="chips"></div>
     <label class="chk" id="scaleRow"><input type="checkbox" id="scaleOthers"> <span data-i18n="scaleOthersLabel">Остальные валюты — от моего курса</span></label>
   </section>
