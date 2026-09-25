@@ -32,6 +32,9 @@
   let pendingNodes = [];
   let scheduled = false;
   let triedContainers = new WeakSet();
+  // Узлы, уже получившие конверсию — не дать чужому walk-up (например, от несвязанной
+  // цифры вроде даты доставки в том же контейнере) найти и посчитать ту же цену повторно.
+  let handledNodes = new WeakSet();
 
   /* -------------------------------------------------------------- конверсия */
 
@@ -168,7 +171,10 @@
       // «SR180» без пробела принимаем, только если между маркером и числом
       // действительно проходит граница элементов, а не буквы одного слова.
       if (hit.short && segments.length < 2 && !/[\s\u00A0]/.test(hit.raw)) continue;
-      if (segments.length) insertConversion(segments, hit, usable[i].rub, container);
+      if (segments.length) {
+        for (const seg of segments) handledNodes.add(seg.node);
+        insertConversion(segments, hit, usable[i].rub, container);
+      }
     }
     return true;
   }
@@ -203,6 +209,7 @@
     while ((node = walker.nextNode())) {
       const parent = node.parentElement;
       if (!parent || SKIP_TAGS.has(parent.tagName) || parent.closest('[data-rpc]')) continue;
+      if (handledNodes.has(node)) continue;
       const value = node.nodeValue || '';
       nodes.push({ node: node, start: text.length, end: text.length + value.length });
       text += value;
@@ -245,7 +252,7 @@
   function collectTextNodes(root, out) {
     if (!root) return out;
     if (root.nodeType === Node.TEXT_NODE) {
-      if (root.parentElement && !isSkippable(root.parentElement)) out.push(root);
+      if (root.parentElement && !isSkippable(root.parentElement) && !handledNodes.has(root)) out.push(root);
       return out;
     }
     if (root.nodeType !== Node.ELEMENT_NODE && root.nodeType !== Node.DOCUMENT_FRAGMENT_NODE) return out;
@@ -255,6 +262,7 @@
       acceptNode(node) {
         if (out.length >= MAX_NODES_PER_PASS) return NodeFilter.FILTER_REJECT;
         if (!node.nodeValue || !/\d/.test(node.nodeValue)) return NodeFilter.FILTER_REJECT;
+        if (handledNodes.has(node)) return NodeFilter.FILTER_REJECT;
         const parent = node.parentElement;
         if (!parent || SKIP_TAGS.has(parent.tagName) || (parent.dataset && parent.dataset.rpc)) {
           return NodeFilter.FILTER_REJECT;
@@ -348,6 +356,7 @@
         if (done) {
           revertAll(done);
           triedContainers = new WeakSet();
+          handledNodes = new WeakSet();
           schedule(done);
           continue;
         }
@@ -406,6 +415,7 @@
     if (running) return;
     running = true;
     triedContainers = new WeakSet();
+    handledNodes = new WeakSet();
     schedule(document.body || document.documentElement);
     if (!observer) observe();
   }
@@ -417,6 +427,7 @@
     if (observer) { observer.disconnect(); observer = null; }
     revertAll();
     triedContainers = new WeakSet();
+    handledNodes = new WeakSet();
   }
 
   function shouldRun() {
