@@ -235,7 +235,7 @@ footer {
 .full-btn {
   display: block;
   flex: 1;
-  width: 100%;
+  min-width: 0;
   border: 1px solid var(--line);
   background: var(--chip);
   color: var(--fg);
@@ -252,6 +252,7 @@ footer {
   background: transparent;
   color: var(--muted);
   flex: 0 0 auto;
+  width: auto;
 }
 
 .full-btn.ghost:hover { color: var(--fg); border-color: var(--muted); }
